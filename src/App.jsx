@@ -10,6 +10,7 @@ import {
 } from "@/data/horses"
 import SwipeScreen from "@/components/SwipeScreen"
 import MatchModal from "@/components/MatchModal"
+import AdModal from "@/components/AdModal"
 import ChatList from "@/components/ChatList"
 import ChatScreen from "@/components/ChatScreen"
 import ProfileScreen from "@/components/ProfileScreen"
@@ -22,6 +23,9 @@ export default function App() {
   const [showMatch, setShowMatch] = useState(false)
   const [lastMatch, setLastMatch] = useState(null)
   const [activeChat, setActiveChat] = useState(null)
+  const [showAd, setShowAd] = useState(false)
+  const [swipeCount, setSwipeCount] = useState(0)
+  const [adThreshold, setAdThreshold] = useState(() => 2 + Math.round(Math.random())) // 2 or 3
 
   const handleSwipe = (direction, horse) => {
     if (direction === "yay" && horse.likesYou) {
@@ -31,6 +35,16 @@ export default function App() {
       setChats((prev) => ({ ...prev, [horse.id]: [] }))
     }
     setProfiles((prev) => prev.filter((p) => p.id !== horse.id))
+
+    setSwipeCount((prev) => {
+      const next = prev + 1
+      if (next >= adThreshold) {
+        setShowAd(true)
+        setAdThreshold(2 + Math.round(Math.random()))
+        return 0
+      }
+      return next
+    })
   }
 
   const handleSendMessage = (horseId, text) => {
@@ -246,6 +260,13 @@ export default function App() {
             onClose={handleMatchClose}
             onKeepSwiping={() => setShowMatch(false)}
           />
+        )}
+      </AnimatePresence>
+
+      {/* Ad modal — only when not showing a match */}
+      <AnimatePresence>
+        {showAd && !showMatch && (
+          <AdModal key="ad-modal" onClose={() => setShowAd(false)} />
         )}
       </AnimatePresence>
     </div>
