@@ -128,18 +128,14 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    box-sizing: border-box;
   }
 
-  html,
-  body {
+  html {
     @apply font-sans;
-    margin: 0;
-    padding: 0;
-    background: #050308;
-    color: #fff;
-    -webkit-tap-highlight-color: transparent;
-    overscroll-behavior: none;
+  }
+
+  body {
+    @apply m-0 bg-background text-foreground;
   }
 
   a {
