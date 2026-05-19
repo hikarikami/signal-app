@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { Crown } from 'lucide-react'
 import { ALL_HORSES, INITIAL_MESSAGES } from '@/data/horses'
 import BubbleBackground from '@/components/hoofrapp/BubbleBackground'
 import BottomNav from '@/components/hoofrapp/BottomNav'
@@ -9,18 +10,24 @@ import SearchTab from '@/components/hoofrapp/SearchTab'
 import ProfileTab from '@/components/hoofrapp/ProfileTab'
 import ChatScreen from '@/components/hoofrapp/ChatScreen'
 import MatchModal from '@/components/hoofrapp/MatchModal'
+import PremiumModal from '@/components/hoofrapp/PremiumModal'
 
+// subscription: 'none' | 'trial' | 'active'
 function App() {
   const [tab, setTab] = useState('discover')
-  const [matches, setMatches] = useState([ALL_HORSES[0], ALL_HORSES[4]])
+  const [matches, setMatches] = useState([ALL_HORSES[0], ALL_HORSES[5]])
   const [messages, setMessages] = useState(INITIAL_MESSAGES)
   const [blockedIds, setBlockedIds] = useState([])
   const [pendingMatch, setPendingMatch] = useState(null)
   const [chatHorse, setChatHorse] = useState(null)
+  const [subscription, setSubscription] = useState('none') // 'none' | 'trial' | 'active'
+  const [trialUsed, setTrialUsed] = useState(false)
+  const [showPremium, setShowPremium] = useState(false)
+
+  const hasPremium = subscription === 'trial' || subscription === 'active'
 
   const handleLike = (horse) => {
     if (matches.find(m => m.id === horse.id)) return
-    // ~60% chance of match for demo purposes
     if (Math.random() > 0.4) {
       setMatches(prev => [...prev, horse])
       setPendingMatch(horse)
@@ -38,14 +45,9 @@ function App() {
   }
 
   const handleSendMessage = (horseId, text) => {
-    const now = new Date()
-    const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     const newMsg = { id: Date.now(), from: 'me', text, time }
-    setMessages(prev => ({
-      ...prev,
-      [horseId]: [...(prev[horseId] || []), newMsg],
-    }))
-    // Fake reply after 1.5s
+    setMessages(prev => ({ ...prev, [horseId]: [...(prev[horseId] || []), newMsg] }))
     setTimeout(() => {
       const replies = [
         "Omg yesss!! 🐴💕",
@@ -55,11 +57,13 @@ function App() {
         "NEIGH!! (that means yes) ✨",
         "My hooves are literally shaking rn 🥺",
       ]
-      const reply = { id: Date.now() + 1, from: 'them', text: replies[Math.floor(Math.random() * replies.length)], time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
-      setMessages(prev => ({
-        ...prev,
-        [horseId]: [...(prev[horseId] || []), reply],
-      }))
+      const reply = {
+        id: Date.now() + 1,
+        from: 'them',
+        text: replies[Math.floor(Math.random() * replies.length)],
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      }
+      setMessages(prev => ({ ...prev, [horseId]: [...(prev[horseId] || []), reply] }))
     }, 1500)
   }
 
@@ -77,6 +81,18 @@ function App() {
     }
   }
 
+  const handleStartTrial = () => {
+    setSubscription('trial')
+    setTrialUsed(true)
+    setShowPremium(false)
+  }
+
+  const handleSubscribe = () => {
+    setSubscription('active')
+    setTrialUsed(true)
+    setShowPremium(false)
+  }
+
   const activeMatches = matches.filter(m => !blockedIds.includes(m.id))
 
   return (
@@ -86,13 +102,26 @@ function App() {
       {/* Phone shell */}
       <div className="relative w-full max-w-[430px] h-svh sm:h-[780px] sm:rounded-[2.5rem] sm:shadow-2xl overflow-hidden flex flex-col bg-gradient-to-b from-pink-50/80 to-purple-50/80 backdrop-blur-sm sm:border-2 sm:border-pink-200">
 
-        {/* Status bar / header */}
+        {/* Header */}
         <div className="flex items-center justify-between px-5 py-3 bg-white/80 backdrop-blur-sm border-b border-pink-100">
           <div className="text-xl font-black bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent tracking-tight">
             HoofR 🐴
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs text-pink-400 font-medium">🌸 Glitter Meadows</span>
+          <div className="flex items-center gap-2">
+            {hasPremium ? (
+              <span className="flex items-center gap-1 text-xs bg-gradient-to-r from-yellow-400 to-pink-400 text-white font-bold px-3 py-1 rounded-full">
+                <Crown size={11} />
+                {subscription === 'trial' ? 'Free Trial' : 'Premium'}
+              </span>
+            ) : (
+              <button
+                onClick={() => setShowPremium(true)}
+                className="flex items-center gap-1 text-xs bg-gradient-to-r from-yellow-100 to-pink-100 text-yellow-600 font-bold px-3 py-1 rounded-full border border-yellow-200"
+              >
+                <Crown size={11} /> Get Premium
+              </button>
+            )}
+            <span className="text-xs text-pink-400 font-medium">🌸</span>
           </div>
         </div>
 
@@ -131,6 +160,8 @@ function App() {
                     onLike={handleLike}
                     onPass={handlePass}
                     blockedIds={blockedIds}
+                    hasPremium={hasPremium}
+                    onShowPaywall={() => setShowPremium(true)}
                   />
                 )}
                 {tab === 'messages' && (
@@ -144,17 +175,22 @@ function App() {
                   <SearchTab
                     onViewProfile={handleViewProfile}
                     blockedIds={blockedIds}
+                    hasPremium={hasPremium}
+                    onShowPaywall={() => setShowPremium(true)}
                   />
                 )}
                 {tab === 'profile' && (
-                  <ProfileTab blockedCount={blockedIds.length} />
+                  <ProfileTab
+                    blockedCount={blockedIds.length}
+                    subscription={subscription}
+                    onShowPremium={() => setShowPremium(true)}
+                  />
                 )}
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* Bottom nav - hide when in chat */}
         {!chatHorse && (
           <BottomNav
             activeTab={tab}
@@ -164,11 +200,18 @@ function App() {
         )}
       </div>
 
-      {/* Match modal */}
       <MatchModal
         match={pendingMatch}
         onClose={handleMatchClose}
         onMessage={handleMatchMessage}
+      />
+
+      <PremiumModal
+        open={showPremium}
+        onClose={() => setShowPremium(false)}
+        onSubscribe={handleSubscribe}
+        onTrial={handleStartTrial}
+        trialUsed={trialUsed}
       />
     </div>
   )

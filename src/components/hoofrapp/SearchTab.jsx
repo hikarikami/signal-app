@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Search, X } from 'lucide-react'
+import { Search, X, Crown } from 'lucide-react'
 import { ALL_HORSES, HORSE_TYPES } from '@/data/horses'
 
-export default function SearchTab({ onViewProfile, blockedIds }) {
+export default function SearchTab({ onViewProfile, blockedIds, hasPremium, onShowPaywall }) {
   const [query, setQuery] = useState('')
   const [selectedType, setSelectedType] = useState('All Types')
 
@@ -63,23 +63,33 @@ export default function SearchTab({ onViewProfile, blockedIds }) {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3">
-            {results.map((horse, i) => (
-              <motion.button
-                key={horse.id}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                onClick={() => onViewProfile(horse)}
-                className="bg-white rounded-2xl overflow-hidden border-2 border-pink-100 shadow-sm active:scale-95 text-left"
-              >
-                <img src={horse.photo} alt={horse.name} className="w-full h-32 object-cover" />
-                <div className="p-2.5">
-                  <p className="font-bold text-gray-800 text-sm truncate">{horse.name}</p>
-                  <p className="text-xs text-purple-400">{horse.breed}</p>
-                  <p className="text-xs text-gray-400 truncate">📍 {horse.location}</p>
-                </div>
-              </motion.button>
-            ))}
+            {results.map((horse, i) => {
+              const locked = horse.breed === 'Thoroughbred' && !hasPremium
+              return (
+                <motion.button
+                  key={horse.id}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  onClick={() => locked ? onShowPaywall() : onViewProfile(horse)}
+                  className={`bg-white rounded-2xl overflow-hidden border-2 shadow-sm active:scale-95 text-left ${locked ? 'border-yellow-200' : 'border-pink-100'}`}
+                >
+                  <div className="relative">
+                    <img src={horse.photo} alt={horse.name} className={`w-full h-32 object-cover ${locked ? 'blur-sm' : ''}`} />
+                    {locked && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-yellow-500/20">
+                        <div className="bg-white rounded-full p-2 shadow"><Crown size={18} className="text-yellow-500" /></div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-2.5">
+                    <p className={`font-bold text-sm truncate ${locked ? 'blur-sm' : 'text-gray-800'}`}>{horse.name}</p>
+                    <p className={`text-xs ${locked ? 'text-yellow-500 font-semibold' : 'text-purple-400'}`}>{locked ? '👑 Premium' : horse.breed}</p>
+                    <p className="text-xs text-gray-400 truncate">📍 {horse.location}</p>
+                  </div>
+                </motion.button>
+              )
+            })}
           </div>
         )}
       </div>

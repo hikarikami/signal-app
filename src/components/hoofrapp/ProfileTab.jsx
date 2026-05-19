@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Plus, X, Edit2, Check } from 'lucide-react'
+import { Plus, X, Edit2, Check, Crown } from 'lucide-react'
 import { MY_PROFILE } from '@/data/horses'
 
-export default function ProfileTab({ blockedCount }) {
+export default function ProfileTab({ blockedCount, subscription, onShowPremium }) {
   const [profile, setProfile] = useState(MY_PROFILE)
   const [editBio, setEditBio] = useState(false)
   const [bioText, setBioText] = useState(profile.lifestyle)
@@ -130,7 +130,34 @@ export default function ProfileTab({ blockedCount }) {
           </div>
         </div>
 
-        {/* Stats */}
+        {/* Subscription status */}
+        {subscription === 'none' ? (
+          <button
+            onClick={onShowPremium}
+            className="w-full bg-gradient-to-r from-yellow-50 to-pink-50 border-2 border-yellow-200 rounded-2xl p-4 flex items-center gap-3 active:scale-[0.98]"
+          >
+            <span className="text-2xl">👑</span>
+            <div className="flex-1 text-left">
+              <p className="text-sm font-black text-yellow-600">Upgrade to HoofR Premium</p>
+              <p className="text-xs text-yellow-500">Unlock Thoroughbreds + 7-day free trial</p>
+            </div>
+            <span className="text-xs bg-yellow-400 text-white font-bold px-2 py-1 rounded-full">Try Free</span>
+          </button>
+        ) : (
+          <div className="bg-gradient-to-r from-yellow-50 to-pink-50 border-2 border-yellow-200 rounded-2xl p-4 flex items-center gap-3">
+            <span className="text-2xl">👑</span>
+            <div className="flex-1">
+              <p className="text-sm font-black text-yellow-600">
+                {subscription === 'trial' ? 'Free Trial Active' : 'HoofR Premium Active'}
+              </p>
+              <p className="text-xs text-yellow-500">
+                {subscription === 'trial' ? '7 days remaining · $9.99/mo after' : 'Billed monthly · Cancel anytime'}
+              </p>
+            </div>
+            <Crown size={18} className="text-yellow-500" />
+          </div>
+        )}
+
         {blockedCount > 0 && (
           <div className="bg-red-50 border border-red-100 rounded-2xl p-4">
             <p className="text-sm text-red-400 font-medium">🚫 {blockedCount} horse{blockedCount > 1 ? 's' : ''} blocked from your hay barn</p>
