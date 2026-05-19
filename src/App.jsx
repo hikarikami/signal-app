@@ -51,7 +51,7 @@ function App() {
             </div>
             <div className="space-y-4">
               <h1 className="text-4xl font-semibold tracking-normal text-balance sm:text-6xl">
-                Build from a clean shadcn starting point.
+                Let's build an app
               </h1>
               <p className="mx-auto max-w-xl text-base leading-7 text-muted-foreground sm:text-lg">
                 The default Vite welcome screen is gone. Tailwind, shadcn

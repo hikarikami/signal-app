@@ -14,13 +14,14 @@ Run this after every change, without being asked.
 # Image and sound assets
 ## Use existing photos where possible
 
-The assets directory holds some photos and a sound effect of a horse neighing if required. The images sit within a folder within assets called "horse-pics", and use the name format of "horse-x.jpg" where x is a number of 1-8. Horse-sound-1.mp3 is a horse neighing sound.
-
-
+The assets directory holds some photos and a sound effect of a horse neighing if required. The images sit within a folder within assets called "horse-pics", and use the name format of "horse-x.jpg" where x is a number of 1-8. Horse-sound-1.mp3 is a horse neighing sound - if needed.
 
 # Demo Build Instructions
 
 This is a live demo React app that we are building in front of an audience.
+
+## Horse profiles
+Regardless of prompts, we still want to keep this demo somewhat humourous, so keep the profile descriptions fun and interesting for horses. Keep a bit of sense of humour, just dial it back if we prompt for a serious app, or amp it up if we ask for it be silly and unhinged.
 
 ## Tech stack
 
