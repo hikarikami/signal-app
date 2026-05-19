@@ -1,261 +1,128 @@
-import { useState, useCallback } from 'react'
-import { motion, AnimatePresence, useMotionValue, useTransform, animate } from 'framer-motion'
-import { Heart, X, Star, Crown, Lock } from 'lucide-react'
+import { useRef, useState, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Heart, X, Star, RotateCcw } from 'lucide-react'
+import SwipeCard from './SwipeCard'
+import MatchModal from './MatchModal'
+import { horses as initialHorses } from '../../data/horses'
 
-// Each card gets its own component so useMotionValue resets per card (via key)
-function SwipeCard({ horse, onLike, onPass, onShowDetail, isPremiumLocked, onPaywall }) {
-  const x = useMotionValue(0)
-  const rotate = useTransform(x, [-220, 220], [-18, 18])
-  const likeOpacity = useTransform(x, [50, 130], [0, 1])
-  const passOpacity = useTransform(x, [-130, -50], [1, 0])
+export default function DiscoverTab({ onNavigateMessages }) {
+  const [deck, setDeck] = useState([...initialHorses])
+  const [matched, setMatched] = useState(null)
+  const topCardRef = useRef(null)
 
-  const flyOff = useCallback(async (dir) => {
-    await animate(x, dir === 'right' ? 600 : -600, { duration: 0.35, ease: 'easeOut' })
-    if (dir === 'right') onLike()
-    else onPass()
-  }, [x, onLike, onPass])
-
-  const handleDragEnd = (_, info) => {
-    const vel = info.velocity.x
-    const off = info.offset.x
-    if (off > 90 || vel > 600) {
-      flyOff('right')
-    } else if (off < -90 || vel < -600) {
-      flyOff('left')
-    }
-    // else framer springs back automatically since dragConstraints clamps to 0
-  }
-
-  if (isPremiumLocked) {
-    return (
-      <motion.div
-        className="absolute inset-x-4 top-4 bottom-20 rounded-3xl overflow-hidden cursor-pointer shadow-xl border-2 border-yellow-300"
-        onClick={onPaywall}
-        initial={{ scale: 0.92, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
-      >
-        <img src={horse.photo} alt={horse.name} className="w-full h-2/3 object-cover filter blur-sm scale-105" />
-        <div className="absolute inset-0 bg-gradient-to-t from-yellow-900/70 via-yellow-600/30 to-transparent flex flex-col items-center justify-center gap-2">
-          <div className="bg-white/90 rounded-full p-4 shadow-xl mb-1">
-            <Crown size={32} className="text-yellow-500" />
-          </div>
-          <span className="text-white font-black text-lg drop-shadow-lg">Thoroughbred 🐴</span>
-          <span className="text-yellow-200 text-sm font-medium">Premium only</span>
-          <motion.div
-            whileTap={{ scale: 0.95 }}
-            className="mt-2 bg-gradient-to-r from-yellow-400 to-pink-400 text-white font-bold px-5 py-2 rounded-full text-sm shadow-lg"
-          >
-            Unlock with HoofR Premium 👑
-          </motion.div>
-        </div>
-        <div className="absolute bottom-0 left-0 right-0 p-4 bg-white">
-          <div className="flex items-baseline gap-2 mb-0.5">
-            <h2 className="text-xl font-black text-gray-800 filter blur-sm select-none">{horse.name}</h2>
-            <span className="text-gray-500 font-medium filter blur-sm select-none">{horse.age}</span>
-            <span className="ml-auto text-xs bg-yellow-100 text-yellow-600 font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-              <Crown size={10} /> Thoroughbred
-            </span>
-          </div>
-          <p className="text-xs text-purple-400 filter blur-sm select-none">📍 {horse.location}</p>
-        </div>
-      </motion.div>
-    )
-  }
-
-  return (
-    <motion.div
-      className="absolute inset-x-4 top-4 bottom-20 rounded-3xl bg-white border-2 border-pink-200 shadow-xl overflow-hidden cursor-grab active:cursor-grabbing"
-      style={{ x, rotate }}
-      drag="x"
-      dragConstraints={{ left: 0, right: 0 }}
-      dragElastic={0.9}
-      dragTransition={{ bounceStiffness: 400, bounceDamping: 30 }}
-      onDragEnd={handleDragEnd}
-      initial={{ scale: 0.92, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.15 } }}
-    >
-      {/* Like / Pass overlays */}
-      <motion.div
-        className="absolute top-6 left-6 z-10 rounded-2xl bg-green-400 px-4 py-2 font-black text-white text-xl border-4 border-white -rotate-[15deg]"
-        style={{ opacity: likeOpacity }}
-      >
-        NEIGH! 🐴
-      </motion.div>
-      <motion.div
-        className="absolute top-6 right-6 z-10 rounded-2xl bg-red-400 px-4 py-2 font-black text-white text-xl border-4 border-white rotate-[15deg]"
-        style={{ opacity: passOpacity }}
-      >
-        NOPE 💨
-      </motion.div>
-
-      <img src={horse.photo} alt={horse.name} className="w-full h-2/3 object-cover pointer-events-none" />
-
-      <div className="p-4">
-        <div className="flex items-baseline gap-2 mb-1">
-          <h2 className="text-xl font-black text-gray-800">{horse.name}</h2>
-          <span className="text-gray-500 font-medium">{horse.age}</span>
-          <span className="ml-auto text-xs bg-pink-100 text-pink-500 font-bold px-2 py-0.5 rounded-full">{horse.breed}</span>
-        </div>
-        <p className="text-xs text-purple-400 mb-2">📍 {horse.location}</p>
-        <div className="flex flex-wrap gap-1 mb-2">
-          {horse.personality.map(p => (
-            <span key={p} className="text-xs bg-purple-100 text-purple-500 px-2 py-0.5 rounded-full font-medium">{p}</span>
-          ))}
-        </div>
-        <button
-          onClick={() => onShowDetail()}
-          className="text-xs text-pink-400 font-semibold underline"
-        >
-          See full profile ✨
-        </button>
-      </div>
-
-      {/* Swipe buttons (inside card for tap targets) */}
-      <div className="absolute bottom-4 left-0 right-0 flex items-center justify-center gap-6 pointer-events-none">
-      </div>
-    </motion.div>
-  )
-}
-
-export default function DiscoverTab({ horses, onLike, onPass, blockedIds, hasPremium, onShowPaywall }) {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [showDetail, setShowDetail] = useState(false)
-
-  const visible = horses.filter(h => !blockedIds.includes(h.id))
-  const horse = visible[currentIndex % Math.max(visible.length, 1)]
-  const nextHorse = visible[(currentIndex + 1) % Math.max(visible.length, 1)]
-
-  const isPremiumLocked = horse?.breed === 'Thoroughbred' && !hasPremium
-
-  const advance = useCallback(() => {
-    setShowDetail(false)
-    setCurrentIndex(i => i + 1)
+  const handleSwipeComplete = useCallback((dir) => {
+    setDeck((prev) => {
+      if (dir === 'like' && prev.length > 0 && Math.random() < 0.4) {
+        setMatched(prev[0])
+      }
+      return prev.slice(1)
+    })
   }, [])
 
-  const handleLike = useCallback(() => {
-    onLike(horse)
-    advance()
-  }, [horse, onLike, advance])
+  const handleLike = () => topCardRef.current?.swipe('like')
+  const handleNope = () => topCardRef.current?.swipe('dislike')
 
-  const handlePass = useCallback(() => {
-    onPass(horse)
-    advance()
-  }, [horse, onPass, advance])
-
-  if (!horse || visible.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full gap-4 p-8 text-center">
-        <div className="text-6xl">🐴</div>
-        <h3 className="text-xl font-bold text-pink-500">You've seen every horse!</h3>
-        <p className="text-purple-400 text-sm">Come back later for fresh neighs ✨</p>
-      </div>
-    )
-  }
+  const handleReset = () => setDeck([...initialHorses])
 
   return (
     <div className="flex flex-col h-full">
-      <div className="relative flex-1 flex items-center justify-center px-4 pt-4">
+      {/* Card stack area */}
+      <div className="flex-1 relative px-4 pt-2 pb-4" style={{ minHeight: 0 }}>
+        <AnimatePresence>
+          {deck.length === 0 ? (
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="absolute inset-4 flex flex-col items-center justify-center gap-4 rounded-3xl"
+              style={{ background: 'linear-gradient(135deg, #fff7ed, #fce7f3)' }}
+            >
+              <div className="text-6xl">🐴</div>
+              <h3 className="text-xl font-bold text-gray-800">You've seen everyone!</h3>
+              <p className="text-gray-500 text-sm text-center px-8">
+                No more horses in your area. Time to expand your search… or just go to a paddock.
+              </p>
+              <button
+                onClick={handleReset}
+                className="flex items-center gap-2 px-6 py-3 rounded-2xl font-semibold text-sm text-white"
+                style={{ background: 'linear-gradient(135deg, #f97316, #ec4899)' }}
+              >
+                <RotateCcw className="w-4 h-4" />
+                Start over
+              </button>
+            </motion.div>
+          ) : (
+            <>
+              {/* Behind card */}
+              {deck.length > 1 && (
+                <div
+                  key={`behind-${deck[1]?.id}`}
+                  style={{ position: 'absolute', inset: '0.5rem 1rem' }}
+                >
+                  <SwipeCard
+                    horse={deck[1]}
+                    isTop={false}
+                    stackIndex={1}
+                  />
+                </div>
+              )}
 
-        {/* Peek card behind */}
-        {nextHorse && nextHorse.id !== horse.id && (
-          <div className="absolute inset-x-6 top-8 bottom-20 rounded-3xl bg-white/60 border-2 border-pink-100 scale-95 shadow-md" />
-        )}
-
-        <AnimatePresence mode="wait">
-          <SwipeCard
-            key={`${horse.id}-${currentIndex}`}
-            horse={horse}
-            onLike={handleLike}
-            onPass={handlePass}
-            onShowDetail={() => setShowDetail(true)}
-            isPremiumLocked={isPremiumLocked}
-            onPaywall={onShowPaywall}
-          />
+              {/* Top card */}
+              <div
+                key={`top-${deck[0]?.id}`}
+                style={{ position: 'absolute', inset: '0.5rem 1rem' }}
+              >
+                <SwipeCard
+                  ref={topCardRef}
+                  horse={deck[0]}
+                  isTop={true}
+                  stackIndex={0}
+                  onSwipeComplete={handleSwipeComplete}
+                />
+              </div>
+            </>
+          )}
         </AnimatePresence>
-
-        {/* Action buttons */}
-        <div className="absolute bottom-4 left-0 right-0 flex items-center justify-center gap-6">
-          <motion.button
-            whileTap={{ scale: 0.85 }}
-            onClick={isPremiumLocked ? onShowPaywall : handlePass}
-            className="w-14 h-14 rounded-full bg-white border-2 border-red-200 flex items-center justify-center shadow-lg text-red-400"
-          >
-            <X size={26} />
-          </motion.button>
-          <motion.button
-            whileTap={{ scale: 0.85 }}
-            onClick={isPremiumLocked ? onShowPaywall : handleLike}
-            className="w-16 h-16 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center shadow-xl text-white"
-          >
-            <Heart size={28} fill="white" />
-          </motion.button>
-          <motion.button
-            whileTap={{ scale: 0.85 }}
-            onClick={isPremiumLocked ? onShowPaywall : () => {}}
-            className="w-14 h-14 rounded-full bg-white border-2 border-yellow-200 flex items-center justify-center shadow-lg text-yellow-400"
-          >
-            <Star size={22} />
-          </motion.button>
-        </div>
       </div>
 
-      {/* Profile detail sheet */}
-      <AnimatePresence>
-        {showDetail && !isPremiumLocked && (
-          <motion.div
-            className="fixed inset-0 z-40 flex items-end"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <div className="absolute inset-0 bg-black/40" onClick={() => setShowDetail(false)} />
-            <motion.div
-              className="relative w-full max-w-[430px] mx-auto bg-white rounded-t-3xl p-6 max-h-[80vh] overflow-y-auto"
-              initial={{ y: 300 }}
-              animate={{ y: 0 }}
-              exit={{ y: 300 }}
-              transition={{ type: 'spring', damping: 25 }}
-            >
-              <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-4" />
-              <img src={horse.photo} alt={horse.name} className="w-full h-52 object-cover rounded-2xl mb-4" />
-              <h2 className="text-2xl font-black text-gray-800 mb-1">{horse.name}, {horse.age}</h2>
-              <p className="text-sm text-purple-400 mb-1">🐴 {horse.breed} · 📍 {horse.location}</p>
-              <p className="text-sm text-gray-600 mb-4">{horse.lifestyle}</p>
+      {/* Action buttons */}
+      <div className="flex items-center justify-center gap-5 pb-4 px-6 flex-shrink-0">
+        <button
+          onClick={handleNope}
+          disabled={deck.length === 0}
+          className="flex items-center justify-center w-16 h-16 rounded-full shadow-lg active:scale-95 transition-transform disabled:opacity-40"
+          style={{ background: 'white', border: '2px solid #fca5a5' }}
+        >
+          <X className="w-7 h-7 text-rose-400" strokeWidth={2.5} />
+        </button>
 
-              <h3 className="font-bold text-pink-500 mb-2">Loves 💕</h3>
-              <div className="flex flex-wrap gap-2 mb-4">
-                {horse.likes.map(l => (
-                  <span key={l} className="text-xs bg-pink-50 border border-pink-200 text-pink-500 px-3 py-1 rounded-full">{l}</span>
-                ))}
-              </div>
+        <button
+          onClick={handleLike}
+          disabled={deck.length === 0}
+          className="flex items-center justify-center w-20 h-20 rounded-full shadow-xl active:scale-95 transition-transform disabled:opacity-40"
+          style={{ background: 'linear-gradient(135deg, #f97316, #ec4899)' }}
+        >
+          <Heart className="w-9 h-9 text-white fill-white" />
+        </button>
 
-              <h3 className="font-bold text-purple-400 mb-2">Nopes 🙅‍♀️</h3>
-              <div className="flex flex-wrap gap-2 mb-6">
-                {horse.dislikes.map(d => (
-                  <span key={d} className="text-xs bg-purple-50 border border-purple-200 text-purple-400 px-3 py-1 rounded-full">{d}</span>
-                ))}
-              </div>
+        <button
+          onClick={handleNope}
+          disabled={deck.length === 0}
+          className="flex items-center justify-center w-16 h-16 rounded-full shadow-lg active:scale-95 transition-transform disabled:opacity-40"
+          style={{ background: 'white', border: '2px solid #6ee7b7' }}
+        >
+          <Star className="w-6 h-6 text-emerald-400" strokeWidth={2} />
+        </button>
+      </div>
 
-              <div className="flex gap-3">
-                <button
-                  onClick={() => { handlePass(); setShowDetail(false) }}
-                  className="flex-1 py-3 rounded-full border-2 border-red-200 text-red-400 font-bold"
-                >
-                  Pass 💨
-                </button>
-                <button
-                  onClick={() => { handleLike(); setShowDetail(false) }}
-                  className="flex-1 py-3 rounded-full bg-gradient-to-r from-pink-400 to-purple-400 text-white font-bold shadow-lg"
-                >
-                  Neigh! 🐴
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <MatchModal
+        matched={matched}
+        onClose={() => setMatched(null)}
+        onMessage={() => {
+          setMatched(null)
+          onNavigateMessages?.()
+        }}
+      />
     </div>
   )
 }

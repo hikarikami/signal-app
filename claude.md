@@ -20,11 +20,17 @@ The assets directory holds some photos and a sound effect of a horse neighing if
 
 This is a live demo React app that we are building in front of an audience.
 
+# Core demo contract — do not break
+This app is a live demo. The core interaction must always work.
+This is the primary demo feature and must not be removed, replaced, hidden, or broken unless explicitly instructed.
+
+Users must be able to:
+- responsive swipe action like tinder that MUST work
+
 ## Horse profiles
 Regardless of prompts, we still want to keep this demo somewhat humourous, so keep the profile descriptions fun and interesting for horses. Keep a bit of sense of humour, just dial it back if we prompt for a serious app, or amp it up if we ask for it be silly and unhinged.
 
 ## Tech stack
-
 Use:
 - React
 - TypeScript
@@ -43,7 +49,6 @@ use components where possible
 The app should always feel:
 - mobile-first
 - polished
-- playful
 - touch-friendly
 - visually cohesive
 - suitable for a live demo
@@ -59,7 +64,6 @@ When given an aesthetic, apply it strongly through:
 - microcopy
 
 ## Layout rules
-
 The app should use a phone-style layout:
 - max-width around 390–430px
 - centred on desktop
@@ -90,10 +94,10 @@ Prefer:
 - Use provided horse assets for horse related app
 
 ## Demo priority
-
 Optimise for:
-1. Looks impressive quickly
-2. Works reliably in the browser
-3. Is easy to explain on stage
-4. Makes audience suggestions visible
-5. Avoids overengineering
+1. Core swipe interaction works reliably
+2. Looks impressive quickly
+3. Works reliably in the browser
+4. Is easy to explain on stage
+5. Makes audience suggestions visible
+6. Avoids overengineering

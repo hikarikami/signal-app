@@ -1,91 +1,96 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { useEffect, useRef } from 'react'
-import horseSound from '@/assets/horse-sound-1.mp3'
+import { X, MessageCircle } from 'lucide-react'
 
-const CONFETTI = ['🌸', '✨', '💕', '🐴', '🌟', '💖', '🎀', '🌈']
-
-export default function MatchModal({ match, onClose, onMessage }) {
-  const audioRef = useRef(null)
-
-  useEffect(() => {
-    if (match) {
-      audioRef.current = new Audio(horseSound)
-      audioRef.current.volume = 0.5
-      audioRef.current.play().catch(() => {})
-    }
-  }, [match])
-
+export default function MatchModal({ matched, onClose, onMessage }) {
   return (
     <AnimatePresence>
-      {match && (
+      {matched && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}
+          onClick={onClose}
         >
-          <div className="absolute inset-0 bg-pink-500/70 backdrop-blur-sm" onClick={onClose} />
-
-          {/* Confetti */}
-          {CONFETTI.map((emoji, i) => (
-            <motion.div
-              key={i}
-              className="absolute text-2xl pointer-events-none"
-              initial={{ y: -20, x: (i - 4) * 60, opacity: 0, scale: 0 }}
-              animate={{
-                y: [0, Math.random() * 300 + 100],
-                x: [(i - 4) * 60, (i - 4) * 60 + (Math.random() - 0.5) * 100],
-                opacity: [0, 1, 1, 0],
-                scale: [0, 1.2, 1, 0.5],
-                rotate: [0, Math.random() * 360],
-              }}
-              transition={{ duration: 2.5, delay: i * 0.1, ease: 'easeOut' }}
-            >
-              {emoji}
-            </motion.div>
-          ))}
-
           <motion.div
-            className="relative z-10 mx-4 rounded-3xl bg-white p-8 text-center shadow-2xl"
-            initial={{ scale: 0, rotate: -10 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+            initial={{ scale: 0.7, opacity: 0, y: 40 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.7, opacity: 0, y: 40 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+            className="flex flex-col items-center gap-6 px-8 py-10 mx-6 rounded-3xl text-center"
+            style={{
+              background: 'linear-gradient(135deg, #ff6b9d 0%, #c44dff 50%, #ff6b6b 100%)',
+              maxWidth: 360,
+            }}
+            onClick={(e) => e.stopPropagation()}
           >
+            {/* Sparkle burst */}
             <motion.div
-              className="mb-2 text-5xl"
-              animate={{ rotate: [0, -10, 10, -10, 0] }}
-              transition={{ duration: 0.5, delay: 0.3 }}
+              initial={{ scale: 0, rotate: -20 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ delay: 0.1, type: 'spring', stiffness: 350, damping: 20 }}
+              className="text-6xl"
             >
-              🐴💕🐴
+              🎠
             </motion.div>
 
-            <h2 className="mb-1 text-3xl font-black text-pink-500">It's a Match!</h2>
-            <p className="mb-4 text-sm text-purple-400 font-medium">
-              You and {match.name} both neighed yes! 🌸
-            </p>
-
-            <div className="mb-6 flex items-center justify-center gap-4">
-              <img
-                src={match.photo}
-                alt={match.name}
-                className="h-20 w-20 rounded-full border-4 border-pink-300 object-cover"
-              />
+            <div>
+              <motion.h2
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.15 }}
+                className="text-white font-black text-3xl tracking-tight"
+              >
+                It&apos;s a Match!
+              </motion.h2>
+              <motion.p
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="text-white/85 text-base mt-2"
+              >
+                You and <strong>{matched.name}</strong> liked each other!
+              </motion.p>
             </div>
 
-            <div className="flex flex-col gap-3">
+            {/* Photos */}
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.25 }}
+              className="flex items-center gap-3"
+            >
+              <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg">
+                <img src={matched.photo} alt={matched.name} className="w-full h-full object-cover" />
+              </div>
+              <div className="text-white text-3xl font-black">❤️</div>
+              <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg">
+                <img src={matched.photo} alt="you" className="w-full h-full object-cover scale-x-[-1]" />
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="flex flex-col gap-3 w-full"
+            >
               <button
                 onClick={onMessage}
-                className="rounded-full bg-gradient-to-r from-pink-400 to-purple-400 px-6 py-3 font-bold text-white shadow-lg active:scale-95"
+                className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl font-bold text-base"
+                style={{ background: 'white', color: '#c44dff' }}
               >
-                Send a Neigh 💌
+                <MessageCircle className="w-5 h-5" />
+                Send a neigh
               </button>
               <button
                 onClick={onClose}
-                className="rounded-full border-2 border-pink-200 px-6 py-2 text-sm font-medium text-pink-400 active:scale-95"
+                className="text-white/80 text-sm font-medium py-1"
               >
-                Keep Clip-Clopping
+                Keep swiping
               </button>
-            </div>
+            </motion.div>
           </motion.div>
         </motion.div>
       )}

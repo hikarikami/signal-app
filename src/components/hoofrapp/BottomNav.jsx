@@ -1,46 +1,64 @@
 import { motion } from 'framer-motion'
-import { Heart, MessageCircle, Search, User } from 'lucide-react'
+import { Flame, MessageCircle, User } from 'lucide-react'
 
-const TABS = [
-  { id: 'discover', icon: Heart, label: 'Discover' },
+const tabs = [
+  { id: 'discover', icon: Flame, label: 'Discover' },
   { id: 'messages', icon: MessageCircle, label: 'Messages' },
-  { id: 'search', icon: Search, label: 'Search' },
-  { id: 'profile', icon: User, label: 'Me' },
+  { id: 'profile', icon: User, label: 'Profile' },
 ]
 
-export default function BottomNav({ activeTab, onTabChange, matchCount }) {
+export default function BottomNav({ activeTab, onTabChange, messageCount = 2 }) {
   return (
-    <nav className="flex items-center bg-white border-t border-pink-100 shadow-lg px-2 pb-safe">
-      {TABS.map(({ id, icon: Icon, label }) => {
-        const active = activeTab === id
+    <div
+      className="flex-shrink-0 flex items-center border-t"
+      style={{
+        background: 'white',
+        borderColor: '#f1f5f9',
+        paddingBottom: 'env(safe-area-inset-bottom, 0)',
+        height: 64,
+      }}
+    >
+      {tabs.map((tab) => {
+        const isActive = activeTab === tab.id
         return (
           <button
-            key={id}
-            onClick={() => onTabChange(id)}
-            className="flex-1 flex flex-col items-center py-3 gap-0.5 relative"
+            key={tab.id}
+            onClick={() => onTabChange(tab.id)}
+            className="flex-1 flex flex-col items-center justify-center gap-1 h-full relative"
           >
             <div className="relative">
-              <Icon
-                size={22}
-                className={active ? 'text-pink-500' : 'text-gray-400'}
-                fill={active && id === 'discover' ? 'currentColor' : 'none'}
+              {isActive ? (
+                <motion.div
+                  layoutId="nav-indicator"
+                  className="absolute -inset-2 rounded-2xl"
+                  style={{ background: 'linear-gradient(135deg, #fff1e6, #fce7f3)' }}
+                />
+              ) : null}
+              <tab.icon
+                className="w-5 h-5 relative z-10"
+                strokeWidth={isActive ? 2.5 : 1.8}
+                style={{
+                  color: isActive ? '#f97316' : '#9ca3af',
+                }}
               />
-              {id === 'messages' && matchCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-pink-500 rounded-full text-white text-[9px] font-bold flex items-center justify-center">
-                  {matchCount}
+              {tab.id === 'messages' && messageCount > 0 && (
+                <span
+                  className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-white text-[10px] font-bold flex items-center justify-center z-20"
+                  style={{ background: '#ec4899' }}
+                >
+                  {messageCount}
                 </span>
               )}
             </div>
-            <span className={`text-[10px] font-semibold ${active ? 'text-pink-500' : 'text-gray-400'}`}>{label}</span>
-            {active && (
-              <motion.div
-                layoutId="tab-indicator"
-                className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-gradient-to-r from-pink-400 to-purple-400 rounded-full"
-              />
-            )}
+            <span
+              className="text-[11px] font-medium relative z-10"
+              style={{ color: isActive ? '#f97316' : '#9ca3af' }}
+            >
+              {tab.label}
+            </span>
           </button>
         )
       })}
-    </nav>
+    </div>
   )
 }

@@ -1,169 +1,107 @@
-import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Plus, X, Edit2, Check, Crown } from 'lucide-react'
-import { MY_PROFILE } from '@/data/horses'
+import { Settings, Edit3, Shield, Star, LogOut } from 'lucide-react'
+import { myProfile } from '../../data/horses'
 
-export default function ProfileTab({ blockedCount, subscription, onShowPremium }) {
-  const [profile, setProfile] = useState(MY_PROFILE)
-  const [editBio, setEditBio] = useState(false)
-  const [bioText, setBioText] = useState(profile.lifestyle)
-  const [newLike, setNewLike] = useState('')
-  const [newDislike, setNewDislike] = useState('')
+const statItems = [
+  { label: 'Likes', value: '47' },
+  { label: 'Matches', value: '12' },
+  { label: 'Gallops', value: '∞' },
+]
 
-  const addLike = () => {
-    if (!newLike.trim()) return
-    setProfile(p => ({ ...p, likes: [...p.likes, newLike.trim()] }))
-    setNewLike('')
-  }
+const menuItems = [
+  { icon: Edit3, label: 'Edit profile', color: '#f97316' },
+  { icon: Shield, label: 'Safety settings', color: '#3b82f6' },
+  { icon: Star, label: 'HoofR Premium', color: '#a855f7', badge: 'PRO' },
+  { icon: Settings, label: 'Settings', color: '#6b7280' },
+  { icon: LogOut, label: 'Sign out', color: '#ef4444' },
+]
 
-  const removeLike = (item) => setProfile(p => ({ ...p, likes: p.likes.filter(l => l !== item) }))
-
-  const addDislike = () => {
-    if (!newDislike.trim()) return
-    setProfile(p => ({ ...p, dislikes: [...p.dislikes, newDislike.trim()] }))
-    setNewDislike('')
-  }
-
-  const removeDislike = (item) => setProfile(p => ({ ...p, dislikes: p.dislikes.filter(d => d !== item) }))
-
-  const saveBio = () => {
-    setProfile(p => ({ ...p, lifestyle: bioText }))
-    setEditBio(false)
-  }
-
+export default function ProfileTab() {
   return (
-    <div className="flex flex-col h-full overflow-y-auto pb-6">
-      {/* Hero */}
-      <div className="relative">
-        <img src={profile.photo} alt={profile.name} className="w-full h-56 object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-        <div className="absolute bottom-4 left-4 text-white">
-          <h2 className="text-2xl font-black">{profile.name}, {profile.age}</h2>
-          <p className="text-sm opacity-90">🐴 {profile.breed} · 📍 {profile.location}</p>
+    <div className="flex flex-col h-full overflow-y-auto pb-4">
+      {/* Profile header */}
+      <div
+        className="mx-4 mt-2 rounded-3xl overflow-hidden relative flex-shrink-0"
+        style={{
+          background: 'linear-gradient(135deg, #fff7ed 0%, #fce7f3 100%)',
+          minHeight: 260,
+        }}
+      >
+        {/* Background blur photo */}
+        <div className="absolute inset-0">
+          <img
+            src={myProfile.photo}
+            alt=""
+            className="w-full h-full object-cover opacity-20"
+          />
         </div>
-      </div>
-
-      <div className="px-4 pt-4 space-y-5">
-        {/* Personality tags */}
-        <div>
-          <h3 className="text-sm font-black text-gray-600 uppercase tracking-wide mb-2">Vibe ✨</h3>
-          <div className="flex flex-wrap gap-2">
-            {profile.personality.map(p => (
-              <span key={p} className="text-xs bg-gradient-to-r from-pink-100 to-purple-100 border border-pink-200 text-pink-500 px-3 py-1 rounded-full font-medium">{p}</span>
-            ))}
-          </div>
-        </div>
-
-        {/* Bio */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-black text-gray-600 uppercase tracking-wide">About Me 🐴</h3>
-            {!editBio ? (
-              <button onClick={() => setEditBio(true)} className="text-pink-400">
-                <Edit2 size={14} />
-              </button>
-            ) : (
-              <button onClick={saveBio} className="text-green-500">
-                <Check size={14} />
-              </button>
-            )}
-          </div>
-          {editBio ? (
-            <textarea
-              value={bioText}
-              onChange={e => setBioText(e.target.value)}
-              className="w-full bg-pink-50 border-2 border-pink-200 rounded-2xl p-3 text-sm outline-none focus:border-pink-400 resize-none"
-              rows={3}
-            />
-          ) : (
-            <p className="text-sm text-gray-600 bg-pink-50 rounded-2xl p-3">{profile.lifestyle}</p>
-          )}
-        </div>
-
-        {/* Likes */}
-        <div>
-          <h3 className="text-sm font-black text-gray-600 uppercase tracking-wide mb-2">Loves 💕</h3>
-          <div className="flex flex-wrap gap-2 mb-2">
-            {profile.likes.map(l => (
-              <span key={l} className="flex items-center gap-1 text-xs bg-pink-50 border border-pink-200 text-pink-500 px-3 py-1 rounded-full font-medium">
-                {l}
-                <button onClick={() => removeLike(l)} className="text-pink-300 hover:text-pink-500"><X size={10} /></button>
-              </span>
-            ))}
-          </div>
-          <div className="flex gap-2">
-            <input
-              value={newLike}
-              onChange={e => setNewLike(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && addLike()}
-              placeholder="Add something you love..."
-              className="flex-1 bg-white border-2 border-pink-200 rounded-full px-3 py-1.5 text-xs outline-none focus:border-pink-400"
-            />
-            <button onClick={addLike} className="w-8 h-8 rounded-full bg-pink-400 text-white flex items-center justify-center shadow">
-              <Plus size={14} />
-            </button>
-          </div>
-        </div>
-
-        {/* Dislikes */}
-        <div>
-          <h3 className="text-sm font-black text-gray-600 uppercase tracking-wide mb-2">Nopes 🙅</h3>
-          <div className="flex flex-wrap gap-2 mb-2">
-            {profile.dislikes.map(d => (
-              <span key={d} className="flex items-center gap-1 text-xs bg-purple-50 border border-purple-200 text-purple-400 px-3 py-1 rounded-full font-medium">
-                {d}
-                <button onClick={() => removeDislike(d)} className="text-purple-300 hover:text-purple-500"><X size={10} /></button>
-              </span>
-            ))}
-          </div>
-          <div className="flex gap-2">
-            <input
-              value={newDislike}
-              onChange={e => setNewDislike(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && addDislike()}
-              placeholder="Add something you don't like..."
-              className="flex-1 bg-white border-2 border-purple-200 rounded-full px-3 py-1.5 text-xs outline-none focus:border-purple-400"
-            />
-            <button onClick={addDislike} className="w-8 h-8 rounded-full bg-purple-400 text-white flex items-center justify-center shadow">
-              <Plus size={14} />
-            </button>
-          </div>
-        </div>
-
-        {/* Subscription status */}
-        {subscription === 'none' ? (
-          <button
-            onClick={onShowPremium}
-            className="w-full bg-gradient-to-r from-yellow-50 to-pink-50 border-2 border-yellow-200 rounded-2xl p-4 flex items-center gap-3 active:scale-[0.98]"
+        <div className="relative flex flex-col items-center pt-8 pb-6 px-6">
+          {/* Avatar */}
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+            className="w-24 h-24 rounded-full overflow-hidden ring-4 ring-white shadow-xl mb-4"
           >
-            <span className="text-2xl">👑</span>
-            <div className="flex-1 text-left">
-              <p className="text-sm font-black text-yellow-600">Upgrade to HoofR Premium</p>
-              <p className="text-xs text-yellow-500">Unlock Thoroughbreds + 7-day free trial</p>
-            </div>
-            <span className="text-xs bg-yellow-400 text-white font-bold px-2 py-1 rounded-full">Try Free</span>
-          </button>
-        ) : (
-          <div className="bg-gradient-to-r from-yellow-50 to-pink-50 border-2 border-yellow-200 rounded-2xl p-4 flex items-center gap-3">
-            <span className="text-2xl">👑</span>
-            <div className="flex-1">
-              <p className="text-sm font-black text-yellow-600">
-                {subscription === 'trial' ? 'Free Trial Active' : 'HoofR Premium Active'}
-              </p>
-              <p className="text-xs text-yellow-500">
-                {subscription === 'trial' ? '7 days remaining · $9.99/mo after' : 'Billed monthly · Cancel anytime'}
-              </p>
-            </div>
-            <Crown size={18} className="text-yellow-500" />
-          </div>
-        )}
+            <img
+              src={myProfile.photo}
+              alt={myProfile.name}
+              className="w-full h-full object-cover"
+            />
+          </motion.div>
 
-        {blockedCount > 0 && (
-          <div className="bg-red-50 border border-red-100 rounded-2xl p-4">
-            <p className="text-sm text-red-400 font-medium">🚫 {blockedCount} horse{blockedCount > 1 ? 's' : ''} blocked from your hay barn</p>
+          <h2 className="text-2xl font-bold text-gray-900">{myProfile.name}, {myProfile.age}</h2>
+          <p className="text-gray-500 text-sm mt-0.5">{myProfile.breed}</p>
+
+          <p className="text-gray-600 text-sm text-center mt-3 leading-relaxed">{myProfile.bio}</p>
+
+          {/* Stats */}
+          <div className="flex gap-6 mt-5 pt-5 border-t border-gray-200/60 w-full justify-center">
+            {statItems.map((stat) => (
+              <div key={stat.label} className="flex flex-col items-center gap-0.5">
+                <span className="text-xl font-bold text-gray-900">{stat.value}</span>
+                <span className="text-xs text-gray-400 font-medium">{stat.label}</span>
+              </div>
+            ))}
           </div>
-        )}
+        </div>
       </div>
+
+      {/* Menu items */}
+      <div className="px-4 mt-4 flex flex-col gap-2">
+        {menuItems.map((item, i) => (
+          <motion.button
+            key={item.label}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.05 }}
+            whileTap={{ scale: 0.98 }}
+            className="flex items-center gap-3 px-4 py-4 rounded-2xl bg-white shadow-sm w-full text-left"
+          >
+            <div
+              className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ backgroundColor: `${item.color}18` }}
+            >
+              <item.icon className="w-4.5 h-4.5" style={{ color: item.color }} />
+            </div>
+            <span className="flex-1 font-medium text-gray-800 text-sm">{item.label}</span>
+            {item.badge && (
+              <span
+                className="text-xs font-bold px-2 py-0.5 rounded-full text-white"
+                style={{ background: 'linear-gradient(135deg, #a855f7, #ec4899)' }}
+              >
+                {item.badge}
+              </span>
+            )}
+            <span className="text-gray-300 text-lg">›</span>
+          </motion.button>
+        ))}
+      </div>
+
+      {/* Footer */}
+      <p className="text-center text-xs text-gray-300 mt-6 px-4">
+        HoofR v1.0 · For horses, by horses 🐴
+      </p>
     </div>
   )
 }
